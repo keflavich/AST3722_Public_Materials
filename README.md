@@ -1,10 +1,9 @@
 # AST3722_Public_Materials
- * [CCDs overview](CCDs Overview - Data Reduction.ipynb) - What's in a CCD image?  Bias, sky, dark.  A brief visual lecture
  
-TODO: describe these
+Lecture materials and demos:
+ * [CCDs overview](<CCDs Overview - Data Reduction.ipynb>) - What's in a CCD image?  Bias, sky, dark.  A brief visual lecture
  * [Data Reduction Walkthrough](DataReductionWalkthrough.ipynb)
  * [Directory Structure (basic UNIX intro)](DirectoryStructure.ipynb)
- * [Fitting - simplified](<Fitting - Simple Version.ipynb>)
  * [Machine Readable Tables](MachineReadableTables.ipynb)
  * [Planet Observation Planning](<Planet Observation Planning.ipynb>)
  * [Shifting Images: Demo with Jupiter](Shifting.ipynb)
@@ -34,7 +33,8 @@ Other stuff:
  * [debug notebook](debug_notebook.ipynb)
  * [Alt/Az calculations](AltAzcalculations.ipynb)
  * [Obsolete/old version of CCD data reduction](CCDReductionLabExercise.ipynb)
- 
+ * [Fitting - simplified](<Fitting - Simple Version.ipynb>) - incomplete notebook
+
 
  
  

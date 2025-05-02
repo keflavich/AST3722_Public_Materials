@@ -1,6 +1,6 @@
 # AST3722_Public_Materials
  
-Lecture materials and demos:
+Lecture materials and demos (intended to be shown as RISE presentations):
  * [CCDs overview](<CCDs Overview - Data Reduction.ipynb>) - What's in a CCD image?  Bias, sky, dark.  A brief visual lecture
  * [Data Reduction Walkthrough](DataReductionWalkthrough.ipynb)
  * [Directory Structure (basic UNIX intro)](DirectoryStructure.ipynb)

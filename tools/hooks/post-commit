@@ -49,18 +49,19 @@ def main():
             nb = json.loads(git("show", "HEAD:" + name).decode("utf-8"))
         except (ValueError, subprocess.CalledProcessError):
             continue
-        if nbtools.has_outputs(nb):
-            dirty.append(name)
+        reasons = nbtools.describe_dirt(nb)
+        if reasons:
+            dirty.append((name, reasons))
 
     if not dirty:
         return 0
 
     sys.stderr.write("\n" + BANNER + "\n")
-    sys.stderr.write("post-commit: this commit contains notebook OUTPUTS.\n\n")
+    sys.stderr.write("post-commit: this commit contains UNSTRIPPED notebooks.\n\n")
     sys.stderr.write("On '{}' notebooks are supposed to be stripped, so that\n"
                      "diffs stay readable and the repo stays small:\n\n".format(branch))
-    for name in dirty:
-        sys.stderr.write("    {}\n".format(name))
+    for name, reasons in dirty:
+        sys.stderr.write("    {}  ({})\n".format(name, ", ".join(reasons)))
     sys.stderr.write("\nFix the commit you just made with:\n\n")
     sys.stderr.write("    python tools/strip_outputs.py\n")
     sys.stderr.write("    git add -A && git commit --amend --no-edit\n\n")

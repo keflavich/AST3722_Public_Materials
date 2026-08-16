@@ -43,7 +43,7 @@ def main():
             nb = json.loads(blob.decode("utf-8"))
         except ValueError:
             continue  # not our problem; let the commit proceed
-        if not nbtools.has_outputs(nb):
+        if not nbtools.describe_dirt(nb):
             continue
 
         stripped = nbtools.dumps(nbtools.strip(nb)).encode("utf-8")
@@ -58,7 +58,7 @@ def main():
 
     if fixed:
         sys.stderr.write(
-            "pre-commit: stripped outputs from {} notebook(s) before committing:\n"
+            "pre-commit: cleaned {} notebook(s) before committing:\n"
             .format(len(fixed)))
         for name in fixed:
             sys.stderr.write("    {}\n".format(name))

@@ -10,7 +10,7 @@ Lecture materials and demos (intended to be shown as RISE presentations):
 
 
 Exercises:
-* [CCD Data Reduction: Bias & Darks](<CCD Reduction - Biases and Darks Exercise.ipynb>)
+* [CMOS Data Reduction: Bias & Darks](<CMOS Reduction - Biases and Darks Exercise.ipynb>) - for the ZWO ASI294mm cameras now in use at CTO
 * [CCD Reduction Part 2: count statistics](<CCDs - Count Statistics - Exercise.ipynb>) - noise calculation, gain.
 * [CCD Reduction Part 2: count statistics](<CCDs - Photon Count Statistics.ipynb>) - filled in version of [CCD Reduction Part 2: count statistics](CCDs - Count Statistics - Exercise.ipynb)
 * [Data Reduction of a Single CCD frame: Exercise](DataReduction_SingleFrame_exercise_filled.ipynb)
@@ -33,4 +33,5 @@ Other stuff:
  * [debug notebook](debug_notebook.ipynb)
  * [Alt/Az calculations](AltAzcalculations.ipynb)
  * [Obsolete/old version of CCD data reduction](CCDReductionLabExercise.ipynb)
+ * [Obsolete CCD-era version of Bias & Darks](<CCD Reduction - Biases and Darks Exercise.ipynb>) - superseded by the CMOS version above
  * [Fitting - simplified](<Fitting - Simple Version.ipynb>) - incomplete notebook

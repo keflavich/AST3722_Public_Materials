@@ -1,0 +1,5 @@
+.ipynb_checkpoints/
+ipython_log_*.py*
+__pycache__/
+*.pyc
+.pytest_cache/

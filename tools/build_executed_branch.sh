@@ -66,7 +66,16 @@ blank for students, so no machine can run them unattended.
 EOF
 
 echo "=== Executing the notebooks CI can run"
-cd "$executed"
+# Run in a scratch copy rather than in the checkout: DirectoryStructure.ipynb
+# and MachineReadableTables.ipynb write files as they go (new_directory/,
+# table.fits, ...), and those would otherwise be swept into the commit by
+# `git add -A`.  Only the notebooks come back.
+scratch="${executed}.workdir"
+rm -rf "$scratch"
+cp -R "$executed" "$scratch"
+rm -rf "$scratch/.git"
+
+cd "$scratch"
 # A notebook that fails is left un-executed; the graft step below then restores
 # whatever outputs it had before.  An upstream outage should not empty out the
 # branch.
@@ -74,7 +83,15 @@ cd "$executed"
     --status run --status network --in-place --keep-going || \
     echo "(some notebooks failed to execute; keeping their previous outputs)"
 
+echo "=== Collecting the executed notebooks"
+cd "$scratch"
+find . -name '*.ipynb' -not -path './.ipynb_checkpoints/*' -print | while IFS= read -r nb; do
+    mkdir -p "$executed/$(dirname "$nb")"
+    cp "$nb" "$executed/$nb"
+done
+
 echo "=== Carrying over outputs for the notebooks CI cannot run"
+cd "$executed"
 "$python" tools/graft_outputs.py --from-dir "$previous" --into-dir "$executed"
 
 echo "=== Done"

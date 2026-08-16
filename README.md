@@ -53,12 +53,12 @@ weekly as well as on every push, so a library release that breaks a lab shows up
 before a student hits it.
 
 Lecture materials and demos (intended to be shown as RISE presentations):
- * [CCDs overview](<CCDs Overview - Data Reduction.ipynb>) [RISE](https://nbviewer.org/format/slides/github/keflavich/AST3722_Public_Materials/blob/master/CCDs%20Overview%20-%20Data%20Reduction.ipynb#) - What's in a CCD image?  Bias, sky, dark.  A brief visual lecture
- * [Data Reduction Walkthrough](DataReductionWalkthrough.ipynb) [RISE](https://nbviewer.org/format/slides/github/keflavich/AST3722_Public_Materials/blob/master/DataReductionWalkthrough.ipynb#)
- * [Directory Structure (basic UNIX intro)](DirectoryStructure.ipynb) [RISE](https://nbviewer.org/format/slides/github/keflavich/AST3722_Public_Materials/blob/master/DirectoryStructure.ipynb#)
- * [Machine Readable Tables](MachineReadableTables.ipynb) [RISE](https://nbviewer.org/format/slides/github/keflavich/AST3722_Public_Materials/blob/master/MachineReadableTables.ipynb#)
- * [Planet Observation Planning](<Planet Observation Planning.ipynb>) [RISE](https://nbviewer.org/format/slides/github/keflavich/AST3722_Public_Materials/blob/master/Planet%20Observation%20Planning.ipynb#)
- * [Shifting Images: Demo with Jupiter](Shifting.ipynb) [RISE](https://nbviewer.org/format/slides/github/keflavich/AST3722_Public_Materials/blob/master/Shifting.ipynb#)
+ * [CCDs overview](<CCDs Overview - Data Reduction.ipynb>) [RISE](https://nbviewer.org/format/slides/github/keflavich/AST3722_Public_Materials/blob/executed/CCDs%20Overview%20-%20Data%20Reduction.ipynb#) - What's in a CCD image?  Bias, sky, dark.  A brief visual lecture
+ * [Data Reduction Walkthrough](DataReductionWalkthrough.ipynb) [RISE](https://nbviewer.org/format/slides/github/keflavich/AST3722_Public_Materials/blob/executed/DataReductionWalkthrough.ipynb#)
+ * [Directory Structure (basic UNIX intro)](DirectoryStructure.ipynb) [RISE](https://nbviewer.org/format/slides/github/keflavich/AST3722_Public_Materials/blob/executed/DirectoryStructure.ipynb#)
+ * [Machine Readable Tables](MachineReadableTables.ipynb) [RISE](https://nbviewer.org/format/slides/github/keflavich/AST3722_Public_Materials/blob/executed/MachineReadableTables.ipynb#)
+ * [Planet Observation Planning](<Planet Observation Planning.ipynb>) [RISE](https://nbviewer.org/format/slides/github/keflavich/AST3722_Public_Materials/blob/executed/Planet%20Observation%20Planning.ipynb#)
+ * [Shifting Images: Demo with Jupiter](Shifting.ipynb) [RISE](https://nbviewer.org/format/slides/github/keflavich/AST3722_Public_Materials/blob/executed/Shifting.ipynb#)
 
 
 Exercises:

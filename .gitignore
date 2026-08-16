@@ -1,5 +1,12 @@
 .ipynb_checkpoints/
 ipython_log_*.py*
+
+# Files the notebooks write while you run them
+new_file.txt
+new_directory/
+table.fits
+abcd_example.fits
+
 __pycache__/
 *.pyc
 .pytest_cache/

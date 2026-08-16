@@ -71,13 +71,24 @@ def test_notebook_is_valid(entry):
 
 
 @pytest.mark.parametrize("entry", MANIFEST.entries, ids=ids(MANIFEST.entries))
-def test_notebook_declares_a_python_kernel(entry):
-    """A notebook with no kernelspec opens against whatever kernel is default."""
+def test_notebook_opens_on_a_stock_kernel(entry):
+    """A notebook that names someone's conda env won't open for anyone else.
+
+    Jupyter records the kernel a notebook was last run in, so a save from
+    "26a_3722real" or "py39" leaves every student -- and CI -- with "No such
+    kernel". strip_outputs.py rewrites these to python3; this catches any that
+    got in another way.
+    """
     nb = nbtools.load(entry.abspath)
     kernelspec = nb.get("metadata", {}).get("kernelspec", {})
     language = kernelspec.get("language", "python")
     assert language == "python", (
         "{} declares a {} kernel".format(entry.path, language)
+    )
+    assert kernelspec.get("name", "python3") == "python3", (
+        "{} wants the kernel {!r}, which exists only on the machine it was "
+        "saved from. Run: python tools/strip_outputs.py".format(
+            entry.path, kernelspec.get("name"))
     )
 
 

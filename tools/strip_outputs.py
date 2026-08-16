@@ -45,10 +45,11 @@ def main(argv=None):
     changed = 0
     for path in paths:
         nb = nbtools.load(path)
-        if not nbtools.has_outputs(nb):
+        reasons = nbtools.describe_dirt(nb)
+        if not reasons:
             continue
         nbtools.save(nbtools.strip(nb), path)
-        print("stripped {}".format(nbtools.relative(path)))
+        print("stripped {} ({})".format(nbtools.relative(path), ", ".join(reasons)))
         changed += 1
     print("{} notebook(s) stripped, {} already clean".format(changed, len(paths) - changed))
     return 0
@@ -72,15 +73,21 @@ def run_filter():
 
 
 def run_check(paths):
-    dirty = [p for p in paths if nbtools.has_outputs(nbtools.load(p))]
+    dirty = []
+    for path in paths:
+        reasons = nbtools.describe_dirt(nbtools.load(path))
+        if reasons:
+            dirty.append((path, reasons))
+
     if not dirty:
-        print("{} notebook(s) checked, none carry outputs".format(len(paths)))
+        print("{} notebook(s) checked, all clean".format(len(paths)))
         return 0
-    nbtools.eprint("These notebooks still carry execution results:")
-    for path in dirty:
-        nbtools.eprint("    {}".format(nbtools.relative(path)))
+
+    nbtools.eprint("These notebooks are not in the form this branch commits:")
+    for path, reasons in dirty:
+        nbtools.eprint("    {}  ({})".format(nbtools.relative(path), ", ".join(reasons)))
     nbtools.eprint("")
-    nbtools.eprint("Strip them with:  python tools/strip_outputs.py")
+    nbtools.eprint("Fix them with:  python tools/strip_outputs.py")
     return 1
 
 

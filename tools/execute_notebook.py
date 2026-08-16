@@ -30,6 +30,12 @@ def execute(path, timeout=600, kernel_name=None, allow_errors=False, workdir=Non
     notebook's own directory so that relative paths inside the notebook mean
     what they mean when you open it by hand.  Tests override it with a scratch
     directory, since a few of these notebooks write files as they run.
+
+    ``kernel_name`` defaults to the stock ``python3`` kernel rather than to
+    whatever the notebook's metadata names.  The point of the test matrix is to
+    find out whether these notebooks work on a given Python, so they have to
+    run on the interpreter under test -- and a notebook saved from a personal
+    conda environment names a kernel that exists on exactly one machine.
     """
     import nbformat
     from nbclient import NotebookClient
@@ -40,7 +46,7 @@ def execute(path, timeout=600, kernel_name=None, allow_errors=False, workdir=Non
     client = NotebookClient(
         nb,
         timeout=timeout,
-        kernel_name=kernel_name or nb.metadata.get("kernelspec", {}).get("name", "python3"),
+        kernel_name=kernel_name or "python3",
         allow_errors=allow_errors,
         resources={"metadata": {"path": workdir or os.path.dirname(os.path.abspath(path))}},
         # These notebooks are teaching material; a stray missing font or an
@@ -79,6 +85,9 @@ def main(argv=None):
                         help="write the executed notebook back to disk")
     parser.add_argument("--timeout", type=int, default=600,
                         help="per-cell timeout in seconds (default: 600)")
+    parser.add_argument("--kernel", default=None,
+                        help="kernel to run in (default: python3, i.e. the "
+                             "interpreter this script is running under)")
     parser.add_argument("--keep-going", action="store_true",
                         help="run every notebook even after one fails")
     args = parser.parse_args(argv)
@@ -100,6 +109,7 @@ def main(argv=None):
         print("=== {}".format(rel), flush=True)
         try:
             nb, exc = execute(path, timeout=args.timeout,
+                              kernel_name=args.kernel,
                               allow_errors=os.path.abspath(path) in allow_errors)
         except Exception:  # noqa: BLE001 - setup problems, e.g. no kernel
             traceback.print_exc()

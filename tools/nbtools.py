@@ -50,12 +50,35 @@ def save(nb, path):
         fh.write(dumps(nb))
 
 
+def normalize_kernelspec(nb):
+    """Point a Python notebook at the stock ``python3`` kernel.
+
+    Notebooks saved from a personal conda environment record its name --
+    "py39", "26a_3722real" -- and then fail to open for anyone else with
+    "No such kernel". Which environment you happened to use is not part of the
+    lesson, so it does not belong in the file.
+
+    Non-Python kernels are left alone. Returns True if anything changed.
+    """
+    kernelspec = nb.setdefault("metadata", {}).get("kernelspec")
+    if not kernelspec:
+        return False
+    if kernelspec.get("language", "python") != "python":
+        return False
+    if kernelspec.get("name") == "python3":
+        return False
+    kernelspec["name"] = "python3"
+    kernelspec["display_name"] = "Python 3"
+    return True
+
+
 def strip(nb):
     """Return a copy of ``nb`` with all execution results removed.
 
     Removes cell outputs, execution counts, and the environment-dependent
-    metadata that otherwise makes notebook diffs unreadable.  The kernelspec
-    and language_info are kept: they describe what the notebook needs, not what
+    metadata that otherwise makes notebook diffs unreadable -- including the
+    name of whichever conda environment the notebook was last run in.
+    language_info is kept: it describes what the notebook needs, not what
     happened when it was run.
     """
     nb = copy.deepcopy(nb)
@@ -63,6 +86,7 @@ def strip(nb):
     metadata = nb.get("metadata", {})
     for key in VOLATILE_NOTEBOOK_METADATA:
         metadata.pop(key, None)
+    normalize_kernelspec(nb)
 
     for cell in nb.get("cells", []):
         if cell.get("cell_type") == "code":
@@ -87,6 +111,34 @@ def has_outputs(nb):
         if cell.get("execution_count") is not None:
             return True
     return False
+
+
+def describe_dirt(nb):
+    """List the reasons this notebook is not in the form we commit.
+
+    Broader than has_outputs: a notebook can be free of outputs and still name
+    a personal conda environment as its kernel, or carry per-run cell metadata.
+    Returns a list of short human-readable strings, empty if the notebook is
+    clean.
+    """
+    reasons = []
+    if has_outputs(nb):
+        reasons.append("execution results")
+
+    kernelspec = nb.get("metadata", {}).get("kernelspec", {})
+    if (kernelspec.get("language", "python") == "python"
+            and kernelspec.get("name") not in (None, "python3")):
+        reasons.append("kernel {!r}".format(kernelspec.get("name")))
+
+    if any(k in nb.get("metadata", {}) for k in VOLATILE_NOTEBOOK_METADATA):
+        reasons.append("run-specific notebook metadata")
+
+    if any(k in cell.get("metadata", {})
+           for cell in nb.get("cells", [])
+           for k in VOLATILE_CELL_METADATA):
+        reasons.append("run-specific cell metadata")
+
+    return reasons
 
 
 def source_text(cell):

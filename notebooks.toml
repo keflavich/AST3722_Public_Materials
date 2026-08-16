@@ -1,0 +1,97 @@
+# Test manifest: what the suite can do with each notebook.
+#
+# Every .ipynb in the repository must be listed here exactly once, or
+# tests/test_notebooks.py fails.  That way a new notebook cannot quietly
+# escape the test suite -- adding one forces a decision about how it is
+# tested.
+#
+#   run         Runs unattended with only requirements.txt installed.
+#               Executed on every supported Python; a failure blocks CI.
+#   network     Runs, but queries a remote service (SESAME, SIMBAD, VizieR,
+#               SkyView).  Executed in a separate CI job that is allowed to
+#               fail, because an outage at CDS is not a bug in this repo.
+#   needs-data  Reads observing data that is not in this repository.
+#               Not executed; checked for structural validity only.
+#   exercise    Contains cells students are meant to fill in, so it raises by
+#               design.  Not executed; checked for structural validity only.
+#
+# To promote a notebook from needs-data or exercise to run, either commit the
+# data it needs or make the placeholder cells complete, then move its line.
+
+[run]
+notebooks = [
+  "DirectoryStructure.ipynb",
+  "Fitting - Simple Version.ipynb",
+  "MachineReadableTables.ipynb",
+  "SNR Investigation Continued (answer key 1).ipynb",
+  "SNR Investigation Continued (answer key two).ipynb",
+]
+
+[run.reasons]
+"DirectoryStructure.ipynb" = "UNIX/astropy intro; writes only into its own working directory"
+"Fitting - Simple Version.ipynb" = "pure numpy/matplotlib"
+"MachineReadableTables.ipynb" = "builds its own tables on the fly"
+"SNR Investigation Continued (answer key 1).ipynb" = "arithmetic only"
+"SNR Investigation Continued (answer key two).ipynb" = "arithmetic only"
+
+[network]
+notebooks = [
+  "AltAzcalculations.ipynb",
+  "Observation Planning.ipynb",
+  "Observation Planning Part 2.ipynb",
+  "Observation Planning Part 3.ipynb",
+  "Planet Observation Planning.ipynb",
+]
+
+[network.reasons]
+"AltAzcalculations.ipynb" = "SESAME name resolution"
+"Observation Planning.ipynb" = "SESAME, SIMBAD, and SkyView finder charts"
+"Observation Planning Part 2.ipynb" = "SIMBAD flux queries"
+"Observation Planning Part 3.ipynb" = "VizieR (Landolt standards) and SkyView"
+"Planet Observation Planning.ipynb" = "JPL ephemerides via astropy solar_system_ephemeris"
+
+[needs-data]
+notebooks = [
+  "CCDs - Photon Count Statistics.ipynb",
+  "CCDs Overview - Data Reduction.ipynb",
+  "DataReductionWalkthrough.ipynb",
+  "DataReduction_SingleFrame_exercise.ipynb",
+  "DataReduction_SingleFrame_exercise_filled.ipynb",
+  "LongOrShortAnswerKey.ipynb",
+  "Observation Planning - Space-Based.ipynb",
+  "Shifting.ipynb",
+]
+
+[needs-data.reasons]
+"CCDs - Photon Count Statistics.ipynb" = "bias_001.FIT and friends"
+"CCDs Overview - Data Reduction.ipynb" = "target_image.FIT and friends"
+"DataReductionWalkthrough.ipynb" = "Jupiter_Color.fits"
+"DataReduction_SingleFrame_exercise.ipynb" = "data_mar8_2021/"
+"DataReduction_SingleFrame_exercise_filled.ipynb" = "data/"
+"LongOrShortAnswerKey.ipynb" = "../labs/CCD_Characterization_Lab/"
+"Observation Planning - Space-Based.ipynb" = "allsky/allsky_rosat.fits, plus SkyView"
+"Shifting.ipynb" = "../labs/observing_session_Sep29/14inch/"
+
+[exercise]
+notebooks = [
+  "CCD Reduction - Biases and Darks Exercise.ipynb",
+  "CCDReductionLabExercise.ipynb",
+  "CCDs - Count Statistics - Exercise.ipynb",
+  "CMOS Reduction - Biases and Darks Exercise.ipynb",
+  "Long Exposures or Short Exposures.ipynb",
+  "Observation Planning - Space-based - Exercise.ipynb",
+  "Observation Planning Exercise.ipynb",
+  "Observation Planning Part 2 Exercise.ipynb",
+  "Observation Planning Part 3 Exercise.ipynb",
+  "SNR Investigation Continued.ipynb",
+]
+
+[options]
+# Notebooks that raise on purpose.  Every cell still has to run; a traceback
+# among the outputs is allowed.
+allow_errors = [
+  "DirectoryStructure.ipynb",  # opens a file that isn't there, to show the error
+]
+
+# Per-cell timeout, in seconds.  Generous: the network notebooks wait on CDS.
+cell_timeout = 600

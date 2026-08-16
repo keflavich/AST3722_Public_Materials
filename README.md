@@ -1,5 +1,57 @@
 # AST3722_Public_Materials
 
+## Two branches
+
+| branch | notebooks | what it's for |
+| --- | --- | --- |
+| `master` | outputs stripped | where you edit. Diffs show changed code and prose instead of changed base64 PNGs. |
+| `executed` | outputs included | generated. Read notebooks here (and on nbviewer) to see the plots without running anything. |
+
+`executed` is rebuilt automatically every time `master` is pushed, by
+[`.github/workflows/build-executed.yml`](.github/workflows/build-executed.yml) —
+you only ever push `master`. Never commit to `executed`; the next build
+overwrites it.
+
+**After cloning, run this once:**
+
+```bash
+./tools/install_hooks.sh
+```
+
+That configures a git filter which strips notebook outputs as they are staged,
+so you can run a notebook, look at the plots, and commit without thinking about
+it — your working copy keeps its outputs, git records only the code. It also
+installs a post-commit hook that says so loudly if outputs get into a commit
+anyway (a filter that was never configured is a silent no-op in git, which is
+exactly the failure this catches).
+
+To strip outputs on disk as well:
+
+```bash
+python tools/strip_outputs.py            # all notebooks
+python tools/strip_outputs.py --check    # just report which ones are dirty
+```
+
+## Tests
+
+```bash
+pip install -r requirements-test.txt
+pytest                    # structure checks + the notebooks that run offline
+pytest -m network         # also the ones that query SESAME/SIMBAD/VizieR/SkyView
+```
+
+[`notebooks.toml`](notebooks.toml) says what the suite does with each notebook:
+executes it (`run`), executes it but tolerates an upstream outage (`network`),
+or checks only that it is a valid notebook because it needs observing data that
+isn't in this repository (`needs-data`) or has cells students are meant to fill
+in (`exercise`). Every notebook must be listed, so adding one forces the
+question of how it gets tested.
+
+CI runs the executable notebooks on Python 3.11 through 3.15
+([`.github/workflows/test-notebooks.yml`](.github/workflows/test-notebooks.yml)),
+weekly as well as on every push, so a library release that breaks a lab shows up
+before a student hits it.
+
 Lecture materials and demos (intended to be shown as RISE presentations):
  * [CCDs overview](<CCDs Overview - Data Reduction.ipynb>) [RISE](https://nbviewer.org/format/slides/github/keflavich/AST3722_Public_Materials/blob/master/CCDs%20Overview%20-%20Data%20Reduction.ipynb#) - What's in a CCD image?  Bias, sky, dark.  A brief visual lecture
  * [Data Reduction Walkthrough](DataReductionWalkthrough.ipynb) [RISE](https://nbviewer.org/format/slides/github/keflavich/AST3722_Public_Materials/blob/master/DataReductionWalkthrough.ipynb#)

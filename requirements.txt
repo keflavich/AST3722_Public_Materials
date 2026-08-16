@@ -1,0 +1,9 @@
+# Everything the notebooks import.
+numpy
+matplotlib
+astropy
+astroquery
+astroplan
+dask
+pillow
+ipython

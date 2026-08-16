@@ -1,0 +1,78 @@
+#!/usr/bin/env python3
+"""Audit the commit that was just made for notebook outputs.
+
+This is the backstop.  The clean filter strips notebooks silently and the
+pre-commit hook catches what the filter misses -- but a filter that was never
+configured is a silent no-op in git, and `--no-verify` skips the pre-commit
+hook.  This hook looks at what actually landed and says so, loudly, with the
+one command that fixes it.
+
+It deliberately does not rewrite the commit on your behalf: amending behind
+your back during a rebase or a merge is worse than a warning.
+
+Installed by tools/install_hooks.sh.
+"""
+
+import json
+import os
+import subprocess
+import sys
+
+BANNER = "=" * 72
+
+
+def git(*args):
+    return subprocess.check_output(("git",) + args)
+
+
+def main():
+    root = git("rev-parse", "--show-toplevel").decode().strip()
+    sys.path.insert(0, os.path.join(root, "tools"))
+    import nbtools
+
+    branch = git("rev-parse", "--abbrev-ref", "HEAD").decode().strip()
+    if branch == "executed":
+        return 0  # the executed branch is supposed to carry outputs
+
+    # Files touched by the commit that just happened.
+    try:
+        changed = git("diff-tree", "--no-commit-id", "--name-only",
+                      "--diff-filter=ACM", "-r", "HEAD").decode().split("\n")
+    except subprocess.CalledProcessError:
+        return 0
+
+    dirty = []
+    for name in changed:
+        if not name.endswith(".ipynb"):
+            continue
+        try:
+            nb = json.loads(git("show", "HEAD:" + name).decode("utf-8"))
+        except (ValueError, subprocess.CalledProcessError):
+            continue
+        if nbtools.has_outputs(nb):
+            dirty.append(name)
+
+    if not dirty:
+        return 0
+
+    sys.stderr.write("\n" + BANNER + "\n")
+    sys.stderr.write("post-commit: this commit contains notebook OUTPUTS.\n\n")
+    sys.stderr.write("On '{}' notebooks are supposed to be stripped, so that\n"
+                     "diffs stay readable and the repo stays small:\n\n".format(branch))
+    for name in dirty:
+        sys.stderr.write("    {}\n".format(name))
+    sys.stderr.write("\nFix the commit you just made with:\n\n")
+    sys.stderr.write("    python tools/strip_outputs.py\n")
+    sys.stderr.write("    git add -A && git commit --amend --no-edit\n\n")
+    sys.stderr.write("If this happens repeatedly, the clean filter isn't set up in\n"
+                     "this clone.  Run it once:\n\n")
+    sys.stderr.write("    ./tools/install_hooks.sh\n")
+    sys.stderr.write(BANNER + "\n\n")
+
+    # A post-commit hook's exit status cannot undo the commit, so exiting
+    # non-zero would only print a confusing extra error.
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

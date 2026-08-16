@@ -1,0 +1,108 @@
+name: notebooks
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+  schedule:
+    # Monday 07:00 UTC. Catches library releases that break the notebooks
+    # between semesters, when nobody is pushing.
+    - cron: "0 7 * * 1"
+  workflow_dispatch:
+
+concurrency:
+  group: notebooks-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # Fast feedback: the manifest matches what's on disk, every notebook is
+  # valid, and nothing snuck outputs into the stripped branch.
+  structure:
+    name: structure and manifest
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Install
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements-test.txt
+
+      - name: Notebooks on this branch carry no outputs
+        run: python tools/strip_outputs.py --check
+
+      - name: Structural tests
+        run: python -m pytest -m "not network" -k "not executes" -v
+
+      - name: Manifest summary
+        if: always()
+        run: python tools/manifest.py
+
+  # The real thing: run the notebooks, on every Python we claim to support.
+  execute:
+    name: execute (py${{ matrix.python-version }})
+    runs-on: ubuntu-latest
+    needs: structure
+    continue-on-error: ${{ matrix.experimental }}
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11", "3.12", "3.13", "3.14"]
+        experimental: [false]
+        include:
+          # 3.15 is not released yet; the scientific stack often has no wheels
+          # for it until well after the interpreter is out. Run it for early
+          # warning, but don't fail the build on it.
+          - python-version: "3.15"
+            experimental: true
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          allow-prereleases: true
+
+      - name: Install
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements-test.txt
+
+      - name: Show what we got
+        run: python -m pip list
+
+      - name: Execute notebooks
+        env:
+          MPLBACKEND: Agg
+        run: python -m pytest -m "not network" -v
+
+  # Notebooks that query SESAME, SIMBAD, VizieR, or SkyView. These break for
+  # reasons that are not our fault (an outage at CDS, a column renamed
+  # upstream), so a failure here is a report, not a broken build.
+  network:
+    name: execute (network services)
+    runs-on: ubuntu-latest
+    needs: structure
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Install
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements-test.txt
+
+      - name: Execute notebooks that need remote services
+        env:
+          MPLBACKEND: Agg
+        run: python -m pytest -m network -v

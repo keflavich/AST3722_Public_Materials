@@ -1,0 +1,8 @@
+# What it takes to run the notebooks under test, on top of requirements.txt.
+-r requirements.txt
+
+pytest
+nbformat
+nbclient
+ipykernel
+tomli; python_version < "3.11"

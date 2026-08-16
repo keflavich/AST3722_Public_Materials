@@ -1,0 +1,78 @@
+#!/usr/bin/env python3
+"""Strip execution results out of notebooks on their way into a commit.
+
+Normally this hook finds nothing to do: the clean filter that
+tools/install_hooks.sh configures has already stripped the staged copy.  It
+earns its keep when the filter is missing or was bypassed -- then it fixes the
+staged content instead of letting a megabyte of base64 PNG into history.
+
+The working tree is left alone, so your outputs stay on screen after you
+commit; only what git records is stripped.
+
+Installed by tools/install_hooks.sh.  Bypass with `git commit --no-verify`.
+"""
+
+import json
+import os
+import subprocess
+import sys
+
+
+def git(*args, **kwargs):
+    return subprocess.check_output(("git",) + args, **kwargs)
+
+
+def main():
+    root = git("rev-parse", "--show-toplevel").decode().strip()
+    sys.path.insert(0, os.path.join(root, "tools"))
+    import nbtools
+
+    staged = [
+        name for name in
+        git("diff", "--cached", "--name-only", "--diff-filter=ACM", "-z")
+        .decode().split("\0")
+        if name.endswith(".ipynb")
+    ]
+    if not staged:
+        return 0
+
+    fixed = []
+    for name in staged:
+        blob = git("show", ":" + name)
+        try:
+            nb = json.loads(blob.decode("utf-8"))
+        except ValueError:
+            continue  # not our problem; let the commit proceed
+        if not nbtools.has_outputs(nb):
+            continue
+
+        stripped = nbtools.dumps(nbtools.strip(nb)).encode("utf-8")
+        new_hash = subprocess.run(
+            ["git", "hash-object", "-w", "--stdin"],
+            input=stripped, stdout=subprocess.PIPE, check=True,
+        ).stdout.decode().strip()
+
+        mode = git("ls-files", "--stage", "--", name).decode().split()[0]
+        git("update-index", "--cacheinfo", "{},{},{}".format(mode, new_hash, name))
+        fixed.append(name)
+
+    if fixed:
+        sys.stderr.write(
+            "pre-commit: stripped outputs from {} notebook(s) before committing:\n"
+            .format(len(fixed)))
+        for name in fixed:
+            sys.stderr.write("    {}\n".format(name))
+        sys.stderr.write(
+            "\nYour working copy still has its outputs. If this keeps happening, "
+            "the clean filter isn't installed -- run tools/install_hooks.sh\n")
+
+    return 0
+
+
+if __name__ == "__main__":
+    try:
+        sys.exit(main())
+    except subprocess.CalledProcessError as exc:
+        sys.stderr.write("pre-commit: git failed ({}); letting the commit through\n"
+                         .format(exc))
+        sys.exit(0)

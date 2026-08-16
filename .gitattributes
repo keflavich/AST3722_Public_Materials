@@ -1,0 +1,11 @@
+# Notebook outputs are stripped on their way into a commit, so that diffs show
+# what changed in the text and code rather than in a base64 PNG.  The filter
+# itself is defined per-clone; run tools/install_hooks.sh once after cloning.
+#
+# An undefined filter is a silent no-op in git, which is why tools/install_hooks.sh
+# also installs a post-commit hook: without it, a clone that skipped the setup
+# step would commit outputs and nothing would say so.
+*.ipynb filter=strip_outputs
+
+# Notebooks are JSON; never let git "fix" line endings inside one.
+*.ipynb -text

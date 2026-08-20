@@ -47,8 +47,6 @@ jobs:
           python -m pip install -r stripped/requirements-test.txt
 
       - name: Rebuild
-        env:
-          MPLBACKEND: Agg
         run: |
           chmod +x stripped/tools/build_executed_branch.sh
           stripped/tools/build_executed_branch.sh stripped executed

@@ -58,6 +58,9 @@ def normalize_kernelspec(nb):
     "No such kernel". Which environment you happened to use is not part of the
     lesson, so it does not belong in the file.
 
+    The display name churns for the same reason -- "Python 3" from one machine,
+    "Python 3 (ipykernel)" from the next -- so it is pinned too.
+
     Non-Python kernels are left alone. Returns True if anything changed.
     """
     kernelspec = nb.setdefault("metadata", {}).get("kernelspec")
@@ -65,10 +68,26 @@ def normalize_kernelspec(nb):
         return False
     if kernelspec.get("language", "python") != "python":
         return False
-    if kernelspec.get("name") == "python3":
+    if (kernelspec.get("name") == "python3"
+            and kernelspec.get("display_name") == "Python 3"):
         return False
     kernelspec["name"] = "python3"
     kernelspec["display_name"] = "Python 3"
+    return True
+
+
+def drop_interpreter_version(nb):
+    """Forget which patch release of Python last opened the notebook.
+
+    Jupyter stamps metadata.language_info.version on every save, so opening a
+    notebook on 3.10 and then on 3.13 produces a diff that says nothing about
+    the lesson. The rest of language_info describes what the notebook needs and
+    is kept. Returns True if anything changed.
+    """
+    language_info = nb.get("metadata", {}).get("language_info")
+    if not language_info or "version" not in language_info:
+        return False
+    del language_info["version"]
     return True
 
 
@@ -77,9 +96,9 @@ def strip(nb):
 
     Removes cell outputs, execution counts, and the environment-dependent
     metadata that otherwise makes notebook diffs unreadable -- including the
-    name of whichever conda environment the notebook was last run in.
-    language_info is kept: it describes what the notebook needs, not what
-    happened when it was run.
+    name of whichever conda environment the notebook was last run in and the
+    patch release of Python that opened it. The rest of language_info is kept:
+    it describes what the notebook needs, not what happened when it was run.
     """
     nb = copy.deepcopy(nb)
 
@@ -87,6 +106,7 @@ def strip(nb):
     for key in VOLATILE_NOTEBOOK_METADATA:
         metadata.pop(key, None)
     normalize_kernelspec(nb)
+    drop_interpreter_version(nb)
 
     for cell in nb.get("cells", []):
         if cell.get("cell_type") == "code":
@@ -126,9 +146,15 @@ def describe_dirt(nb):
         reasons.append("execution results")
 
     kernelspec = nb.get("metadata", {}).get("kernelspec", {})
-    if (kernelspec.get("language", "python") == "python"
-            and kernelspec.get("name") not in (None, "python3")):
-        reasons.append("kernel {!r}".format(kernelspec.get("name")))
+    if kernelspec.get("language", "python") == "python":
+        if kernelspec.get("name") not in (None, "python3"):
+            reasons.append("kernel {!r}".format(kernelspec.get("name")))
+        elif kernelspec.get("display_name", "Python 3") != "Python 3":
+            reasons.append("kernel display name {!r}"
+                           .format(kernelspec.get("display_name")))
+
+    if "version" in nb.get("metadata", {}).get("language_info", {}):
+        reasons.append("interpreter version stamp")
 
     if any(k in nb.get("metadata", {}) for k in VOLATILE_NOTEBOOK_METADATA):
         reasons.append("run-specific notebook metadata")

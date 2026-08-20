@@ -62,6 +62,7 @@ Lecture materials and demos (intended to be shown as RISE presentations):
 
 
 Exercises:
+* [Image Alignment and Stacking](<Image Alignment and Stacking Exercise.ipynb>) - measuring drift, aligning with `np.roll`, stacking to a master frame, and saving it
 * [Detector Characterization (CMOS)](<Detector Characterization (CMOS) - Bias, Darks, Gain, Flats.ipynb>) - bias, darks, gain, and flats for the ZWO ASI294mm cameras now in use at CTO
 * [CCD Reduction Part 2: count statistics](<CCDs - Count Statistics - Exercise.ipynb>) - noise calculation, gain.
 * [CCD Reduction Part 2: count statistics](<CCDs - Photon Count Statistics.ipynb>) - filled in version of [CCD Reduction Part 2: count statistics](CCDs - Count Statistics - Exercise.ipynb)

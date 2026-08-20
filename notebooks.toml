@@ -78,6 +78,7 @@ notebooks = [
   "CCDs - Count Statistics - Exercise.ipynb",
   "Detector Characterization (CCD) - Bias and Darks.ipynb",
   "Detector Characterization (CMOS) - Bias, Darks, Gain, Flats.ipynb",
+  "Image Alignment and Stacking Exercise.ipynb",
   "Long Exposures or Short Exposures.ipynb",
   "Observation Planning - Space-based - Exercise.ipynb",
   "Observation Planning Exercise.ipynb",

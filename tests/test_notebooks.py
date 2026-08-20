@@ -174,6 +174,18 @@ def run_notebook(entry, workdir):
         pytest.fail("{} failed to execute: {}".format(entry.path, describe_failure(exc)),
                     pytrace=False)
 
+    # A notebook that draws should come back with pictures in it. Forcing
+    # MPLBACKEND=Agg makes plots vanish silently -- the notebook still passes,
+    # and the `executed` branch quietly loses every figure. Catch that here.
+    if "plt." in "".join(nbtools.source_text(c) for c in nb.cells):
+        images = [o for c in nb.cells for o in c.get("outputs", [])
+                  if "image/png" in o.get("data", {})]
+        assert images, (
+            "{} calls matplotlib but produced no figures. The kernel is "
+            "probably not using the inline backend -- check that nothing has "
+            "set MPLBACKEND.".format(entry.path)
+        )
+
     if entry.allow_errors:
         return
 

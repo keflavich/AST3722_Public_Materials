@@ -15,12 +15,42 @@ open the notebook by hand.
 """
 
 import argparse
+import contextlib
 import os
 import sys
 import traceback
 
 import nbtools
 from manifest import load_manifest
+
+# The backend a Jupyter kernel uses by default. It draws to an in-memory PNG
+# that gets attached to the cell as output, and it never opens a window.
+INLINE_BACKEND = "module://matplotlib_inline.backend_inline"
+
+
+@contextlib.contextmanager
+def inline_backend():
+    """Pin MPLBACKEND to the inline backend for any kernel started inside.
+
+    A kernel inherits this process's environment, so an ambient
+    MPLBACKEND=Agg -- which a test suite quite reasonably sets, to stop stray
+    plots opening windows on someone's laptop -- would silently follow it in
+    and throw away every figure the notebooks draw. The notebooks would still
+    pass; they would just come back with no pictures in them.
+
+    Agg and the inline backend both avoid opening windows. Only the inline one
+    also captures what was drawn, so that is what notebook execution gets,
+    whatever the caller happens to have set.
+    """
+    previous = os.environ.get("MPLBACKEND")
+    os.environ["MPLBACKEND"] = INLINE_BACKEND
+    try:
+        yield
+    finally:
+        if previous is None:
+            os.environ.pop("MPLBACKEND", None)
+        else:
+            os.environ["MPLBACKEND"] = previous
 
 
 def execute(path, timeout=600, kernel_name=None, allow_errors=False, workdir=None):
@@ -55,7 +85,10 @@ def execute(path, timeout=600, kernel_name=None, allow_errors=False, workdir=Non
     )
 
     try:
-        client.execute()
+        # The kernel picks up MPLBACKEND when it starts, so the whole run has
+        # to happen inside this.
+        with inline_backend():
+            client.execute()
     except Exception as exc:  # noqa: BLE001 - the failure is the result here
         return nb, exc
     return nb, None

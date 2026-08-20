@@ -74,10 +74,10 @@ notebooks = [
 
 [exercise]
 notebooks = [
-  "CCD Reduction - Biases and Darks Exercise.ipynb",
   "CCDReductionLabExercise.ipynb",
   "CCDs - Count Statistics - Exercise.ipynb",
-  "CMOS Reduction - Biases and Darks Exercise.ipynb",
+  "Detector Characterization (CCD) - Bias and Darks.ipynb",
+  "Detector Characterization (CMOS) - Bias, Darks, Gain, Flats.ipynb",
   "Long Exposures or Short Exposures.ipynb",
   "Observation Planning - Space-based - Exercise.ipynb",
   "Observation Planning Exercise.ipynb",

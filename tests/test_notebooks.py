@@ -92,6 +92,26 @@ def test_notebook_opens_on_a_stock_kernel(entry):
     )
 
 
+@pytest.mark.parametrize("entry", MANIFEST.entries, ids=ids(MANIFEST.entries))
+def test_notebook_source_is_line_split(entry):
+    """Cell source must be a list of lines, not one long string.
+
+    Both forms are valid nbformat and Jupyter shows no difference, but a
+    string-valued source puts each cell on a single JSON line, so changing one
+    word reads as a rewrite of the whole cell. Any tool that round-trips a
+    notebook through nbformat and writes the dict straight back out will
+    introduce this; strip_outputs.py normalizes it.
+    """
+    nb = nbtools.load(entry.abspath)
+    flattened = [i for i, c in enumerate(nb.get("cells", []))
+                 if isinstance(c.get("source"), str)]
+    assert not flattened, (
+        "{}: {} cell(s) store source as a single string, which makes their "
+        "diffs unreadable. Run: python tools/strip_outputs.py".format(
+            entry.path, len(flattened))
+    )
+
+
 # --------------------------------------------------------------------------
 # Notebooks we claim to be runnable had better not be exercises
 # --------------------------------------------------------------------------

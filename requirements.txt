@@ -3,7 +3,12 @@ numpy
 matplotlib
 astropy
 astroquery
-astroplan
+# astroplan's last release (0.10.1, 2024-08) predates changes in matplotlib
+# and astroquery that break plot_airmass, plot_altitude and plot_finder_image.
+# Both are fixed in https://github.com/astropy/astroplan/pull/636, which is
+# still awaiting review; this branch is a pinned copy of it. Go back to plain
+# "astroplan" once a release contains the fix.
+astroplan @ git+https://github.com/keflavich/astroplan.git@ast3722-plotfix
 dask
 pillow
 ipython

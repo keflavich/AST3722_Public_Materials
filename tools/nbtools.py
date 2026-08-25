@@ -91,6 +91,24 @@ def drop_interpreter_version(nb):
     return True
 
 
+def normalize_sources(nb):
+    """Store every cell's source as a list of lines, the way Jupyter writes it.
+
+    nbformat hands back ``source`` as one big string. Writing that back out
+    produces a perfectly valid notebook in which each cell is a single very
+    long JSON line -- and a one-word edit then shows up in git as a rewrite of
+    the whole cell, which is exactly what this repo's stripping setup exists to
+    prevent. Returns True if anything changed.
+    """
+    changed = False
+    for cell in nb.get("cells", []):
+        source = cell.get("source")
+        if isinstance(source, str):
+            cell["source"] = source.splitlines(keepends=True)
+            changed = True
+    return changed
+
+
 def strip(nb):
     """Return a copy of ``nb`` with all execution results removed.
 
@@ -107,6 +125,7 @@ def strip(nb):
         metadata.pop(key, None)
     normalize_kernelspec(nb)
     drop_interpreter_version(nb)
+    normalize_sources(nb)
 
     for cell in nb.get("cells", []):
         if cell.get("cell_type") == "code":
@@ -155,6 +174,9 @@ def describe_dirt(nb):
 
     if "version" in nb.get("metadata", {}).get("language_info", {}):
         reasons.append("interpreter version stamp")
+
+    if any(isinstance(c.get("source"), str) for c in nb.get("cells", [])):
+        reasons.append("cell source stored as one string instead of lines")
 
     if any(k in nb.get("metadata", {}) for k in VOLATILE_NOTEBOOK_METADATA):
         reasons.append("run-specific notebook metadata")

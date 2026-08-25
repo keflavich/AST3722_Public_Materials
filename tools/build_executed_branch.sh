@@ -79,8 +79,12 @@ cd "$scratch"
 # A notebook that fails is left un-executed; the graft step below then restores
 # whatever outputs it had before.  An upstream outage should not empty out the
 # branch.
+# Exercises are included: their fill-in-the-blank cells carry a
+# raises-exception tag, so they run to the end with tracebacks where the
+# blanks are. The ones that also need observing data abort instead, are left
+# un-executed, and get their previous outputs back in the graft step below.
 "$python" tools/execute_notebook.py \
-    --status run --status network --in-place --keep-going || \
+    --status run --status network --status exercise --in-place --keep-going || \
     echo "(some notebooks failed to execute; keeping their previous outputs)"
 
 echo "=== Collecting the executed notebooks"

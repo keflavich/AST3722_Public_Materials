@@ -70,6 +70,21 @@ def test_notebook_is_valid(entry):
     assert nb.cells, "{} has no cells".format(entry.path)
 
 
+def skip_if_freshly_run(entry, nb):
+    """Some tests describe the form a notebook is *committed* in.
+
+    A working copy is supposed to drift from that: running a notebook fills it
+    with outputs and stamps the kernel it ran under. The clean filter strips
+    all of it on the way into a commit, and CI re-checks on a fresh checkout
+    where working tree and committed form are the same thing. So a notebook
+    with outputs in it locally is someone working, not a failure.
+    """
+    if nbtools.has_outputs(nb):
+        pytest.skip("{} has been run since it was last committed; the commit "
+                    "filter normalizes this (tools/strip_outputs.py --check)"
+                    .format(entry.path))
+
+
 @pytest.mark.parametrize("entry", MANIFEST.entries, ids=ids(MANIFEST.entries))
 def test_notebook_opens_on_a_stock_kernel(entry):
     """A notebook that names someone's conda env won't open for anyone else.
@@ -80,6 +95,7 @@ def test_notebook_opens_on_a_stock_kernel(entry):
     got in another way.
     """
     nb = nbtools.load(entry.abspath)
+    skip_if_freshly_run(entry, nb)
     kernelspec = nb.get("metadata", {}).get("kernelspec", {})
     language = kernelspec.get("language", "python")
     assert language == "python", (
@@ -103,6 +119,7 @@ def test_notebook_source_is_line_split(entry):
     introduce this; strip_outputs.py normalizes it.
     """
     nb = nbtools.load(entry.abspath)
+    skip_if_freshly_run(entry, nb)
     flattened = [i for i, c in enumerate(nb.get("cells", []))
                  if isinstance(c.get("source"), str)]
     assert not flattened, (
@@ -155,6 +172,29 @@ def test_runnable_notebooks_have_no_placeholders(entry):
 
 
 EXERCISES = MANIFEST.by_status("exercise")
+
+
+@pytest.mark.parametrize("entry", EXERCISES, ids=ids(EXERCISES))
+def test_unfillable_cells_are_tagged(entry):
+    """Cells students must fill in carry a 'raises-exception' tag.
+
+    Without the tag, running an exercise stops dead at the first blank, and the
+    executed branch can only ever show the cells above it. With it, nbclient
+    records the traceback and keeps going.
+
+    Only cells that cannot compile are required to be tagged; those are blanks
+    on any machine. Cells that fail for want of a data file are deliberately
+    left untagged, so that a genuinely broken one still stops the run.
+    """
+    from tag_expected_failures import TAG, is_tagged, uncompilable_cells
+
+    nb = nbtools.load(entry.abspath)
+    untagged = [i for i in uncompilable_cells(nb) if not is_tagged(nb["cells"][i])]
+    assert not untagged, (
+        "{} has fill-in-the-blank cells that are not tagged {!r}: {}\n"
+        "Run: python tools/tag_expected_failures.py".format(
+            entry.path, TAG, untagged)
+    )
 
 
 @pytest.mark.parametrize("entry", EXERCISES, ids=ids(EXERCISES))

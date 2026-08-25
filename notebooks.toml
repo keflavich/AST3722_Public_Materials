@@ -12,8 +12,12 @@
 #               fail, because an outage at CDS is not a bug in this repo.
 #   needs-data  Reads observing data that is not in this repository.
 #               Not executed; checked for structural validity only.
-#   exercise    Contains cells students are meant to fill in, so it raises by
-#               design.  Not executed; checked for structural validity only.
+#   exercise    Contains cells students are meant to fill in.  Those cells are
+#               tagged 'raises-exception' (see tools/tag_expected_failures.py),
+#               so the notebook still runs end to end and the executed branch
+#               shows it worked through except for the blanks.  Exercises that
+#               additionally need observing data cannot run at all and keep
+#               whatever outputs they were last committed with.
 #
 # To promote a notebook from needs-data or exercise to run, either commit the
 # data it needs or make the placeholder cells complete, then move its line.

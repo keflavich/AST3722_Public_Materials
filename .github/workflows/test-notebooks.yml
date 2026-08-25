@@ -36,6 +36,9 @@ jobs:
       - name: Notebooks on this branch carry no outputs
         run: python tools/strip_outputs.py --check
 
+      - name: Fill-in-the-blank cells are tagged raises-exception
+        run: python tools/tag_expected_failures.py --check
+
       - name: Structural tests
         run: python -m pytest -m "not network" -k "not executes" -v
 
